@@ -26,16 +26,17 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.lang.String;
-//import java.lang.Class<T>;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Map;
 import java.util.NavigableMap;
+import org.jruby.embed.PathType;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.script.Invocable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServlet;
@@ -66,50 +67,33 @@ public class ShellEndPoint extends HttpServlet {
   }
   
   private String commandResponse(String command) 
-    throws FileNotFoundException
+	 throws FileNotFoundException
   {	
-	Object ob;
     String response;
-    ScriptingContainer container;
-    ScriptEngineManager manager;
-    ScriptEngine engine;
+    final Log LOG = LogFactory.getLog(ShellEndPoint.class.getName());
     
-    if(!loaded) {
-	  loadPaths();
-	  loaded = true;
-	}
-    
-	final Log LOG = LogFactory.getLog(ShellEndPoint.class.getName());
-    container = new ScriptingContainer();
-    manager = new ScriptEngineManager();
-    engine = manager.getEngineByName("jruby");
-    ScriptContext context = engine.getContext();	
-    //ob = engine.getBindings(ScriptContext.ENGINE_SCOPE).get("myirb");
-    //response = container.callMethod(ob, "eval", command, String.class);
-		
-   /* if(!loaded) {
-      loadPaths();
-      try {
-        Reader reader = new FileReader(hirbSource);
-        engine.eval(reader);
-        loaded = true;
-      } catch (ScriptException e) {
-        LOG.debug(e.getMessage());
-        //e.printStackTrace();
-      }
-    }*/
+    loadPaths();
+    ScriptingContainer container = new ScriptingContainer();
+    ScriptEngineManager manager = new ScriptEngineManager();
+    ScriptEngine engine = manager.getEngineByName("jruby");
+    ScriptContext context = engine.getContext();
+    Invocable inv = (Invocable) engine;
+    Reader reader = new FileReader(hirbSource);
 		
     try {
-		engine.eval(new FileReader(myirbSource));
-	   response = engine.eval("eval " + command, context).toString();
-      //response = "DONE";
+      engine.eval(reader);
+      Object ob = inv.invokeFunction("eval", new String(command));
+      //Object nv = engine.getBindings(ScriptContext.ENGINE_SCOPE).get("myobject"); 
+      //response = container.callMethod(nv, "eval" + " + command + ", String.class);
+      response = "DONE";
       return response;
     } catch (ScriptException e) {
+	  LOG.debug(e.getMessage());
+    } catch (java.lang.NoSuchMethodException e) {
       LOG.debug(e.getMessage());
-      //e.printStackTrace();
     }
-	
-    return "FAILED!";
+    
+    return "FAILED";
   }
 
   public void doGet(HttpServletRequest request, HttpServletResponse response)

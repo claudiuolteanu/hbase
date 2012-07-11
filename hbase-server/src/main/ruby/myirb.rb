@@ -1,14 +1,15 @@
-require 'hirb'
 
 class MyIrb
   # captures everything, stdout, stderr, returns, etc
-  def initialize(java_callback_object)
-  end
   
-
   def eval(str)
-    eval_result = Kernel.eval(str)
-    java_callback_object.results(str, eval_result)
+    $eval_result = Kernel.eval(str)
+    puts $eval_result
   end
 end
+$ob = MyIrb.new
+$ob.eval('puts "test"')
+
+
+
 

@@ -38,6 +38,7 @@ include Java
 require 'irb/completion'
 require 'pathname'
 
+
 # Add the directory names in hbase.jruby.sources commandline option
 # to the ruby load path so I can load up my HBase ruby modules
 sources = java.lang.System.getProperty('hbase.ruby.sources')
@@ -102,6 +103,7 @@ require 'hbase'
 
 # Load hbase shell
 require 'shell'
+require 'myirb'
 
 # Require formatter
 require 'shell/formatter'
