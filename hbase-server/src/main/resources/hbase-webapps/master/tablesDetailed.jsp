@@ -64,6 +64,7 @@
                 <li><a href="/stacks">Thread Dump</a></li>
                 <li><a href="/logLevel">Log Level</a></li>
                 <li><a href="/dump">Debug dump</a></li>
+                <li><a href="/shell.jsp">Shell</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
