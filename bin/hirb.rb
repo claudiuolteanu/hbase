@@ -103,10 +103,11 @@ require 'hbase'
 
 # Load hbase shell
 require 'shell'
-require 'myirb'
 
 # Require formatter
 require 'shell/formatter'
+
+require 'engine'
 
 # Presume console format.
 # Formatter takes an :output_stream parameter, if you don't want STDOUT.

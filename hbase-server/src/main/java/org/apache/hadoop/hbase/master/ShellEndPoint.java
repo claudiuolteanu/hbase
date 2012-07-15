@@ -50,7 +50,7 @@ public class ShellEndPoint extends HttpServlet {
   private final static String jrubyhome = "/usr/lib/jruby/";
   private String rubySources;
   private String hirbSource;
-  private String myirbSource;
+  private String myEngine;
   private boolean loaded = false;
 	
   private void loadPaths() {
@@ -59,7 +59,7 @@ public class ShellEndPoint extends HttpServlet {
     userDir = System.getProperty("user.dir");
     rubySources = userDir + "/../hbase-server/src/main/ruby";
     hirbSource = userDir + "/hirb.rb";
-    myirbSource = rubySources + "/myirb.rb";
+    myEngine = rubySources + "/engine.rb";
 		
     System.setProperty("jruby.home", jrubyhome);
     System.setProperty("org.jruby.embed.class.path", rubySources+":"+hirbSource);
@@ -67,33 +67,30 @@ public class ShellEndPoint extends HttpServlet {
   }
   
   private String commandResponse(String command) 
-	 throws FileNotFoundException
+    throws FileNotFoundException
   {	
     String response;
     final Log LOG = LogFactory.getLog(ShellEndPoint.class.getName());
     
     loadPaths();
-    ScriptingContainer container = new ScriptingContainer();
+    
     ScriptEngineManager manager = new ScriptEngineManager();
     ScriptEngine engine = manager.getEngineByName("jruby");
-    ScriptContext context = engine.getContext();
-    Invocable inv = (Invocable) engine;
-    Reader reader = new FileReader(hirbSource);
-		
-    try {
-      engine.eval(reader);
-      Object ob = inv.invokeFunction("eval", new String(command));
-      //Object nv = engine.getBindings(ScriptContext.ENGINE_SCOPE).get("myobject"); 
-      //response = container.callMethod(nv, "eval" + " + command + ", String.class);
-      response = "DONE";
-      return response;
-    } catch (ScriptException e) {
-	  LOG.debug(e.getMessage());
-    } catch (java.lang.NoSuchMethodException e) {
-      LOG.debug(e.getMessage());
-    }
+    ScriptingContainer container = new ScriptingContainer();
+
+    Reader reader = new FileReader(myEngine);
     
-    return "FAILED";
+    try {
+      engine.eval(new FileReader(hirbSource));
+      Object receiver = engine.eval(reader);
+      Object ob = container.callMethod(receiver,"run_code",command);
+      response = ob.toString();
+    } catch(ScriptException e) {
+      LOG.debug(e.getMessage());
+      response ="ERROR";
+	}
+	  
+    return response;
   }
 
   public void doGet(HttpServletRequest request, HttpServletResponse response)
