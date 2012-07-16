@@ -52,12 +52,13 @@ TableResource tableR = new TableResource("tableResource");
 <script language="JavaScript" type="text/javascript" src="termlib.js"></script>
 
 <script language="JavaScript" type="text/javascript">
+  var helpPage="HBase Shell; type 'help<RETURN>' for list of supported commands.\nType 'exit<RETURN>' to leave the HBase Shell";
   var conf= {
             x: 100,
             y: 100,
             cols: 80,
             rows: 24,
-            greeting: "HBase Shell; type 'help<RETURN>' for list of supported commands.\nType 'exit<RETURN>' to leave the HBase Shell",
+            greeting: helpPage,
             crsrBlinkMode: true,
             handler: termHandler,
             timeout: 50000,
@@ -74,6 +75,7 @@ TableResource tableR = new TableResource("tableResource");
     var line = this.lineBuffer;
     if (line == 'clear') {
       this.clear();
+      this.write(helpPage);
     }
     else if (line != "") {
       var command = encodeURIComponent(line);

@@ -81,7 +81,7 @@ public class ShellEndPoint extends HttpServlet {
     Reader reader = new FileReader(myEngine);
     
     try {
-      engine.eval(new FileReader(hirbSource));
+   //   engine.eval(new FileReader(hirbSource));
       Object receiver = engine.eval(reader);
       Object ob = container.callMethod(receiver,"run_code",command);
       response = ob.toString();

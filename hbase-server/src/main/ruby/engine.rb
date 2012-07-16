@@ -1,5 +1,6 @@
 require 'stringio'
 require 'irb'
+require 'hirb'
 
 class Engine
   extend Shell
@@ -38,10 +39,6 @@ class Engine
      $stdout.read
    end
    
-   public
-   def afiseaza
-		puts "CACAT"
-   end
 end
 
 module Kernel
