@@ -6,10 +6,12 @@ class Engine
   extend Shell
   def initialize()
     @binding = Kernel.binding
+    stdout_id = $stdout.to_i
+    $stdout = IO.new(stdout_id)
   end
   def run_code(code)
     # run something
-    stdout_id = $stdout.to_i
+    old_stdout = $stdout
     $stdout = StringIO.new
     cmd = <<-EOF
     $stdout = StringIO.new
@@ -25,10 +27,10 @@ class Engine
       return e
     ensure
       output = get_stdout
-      $stdout = IO.new(stdout_id)
-      return output
+      $stdout = old_stdout
     end
-
+	
+	
     return output
   end
 

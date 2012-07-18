@@ -52,7 +52,8 @@ public class ShellEndPoint extends HttpServlet {
   private String hirbSource;
   private String myEngine;
   private boolean loaded = false;
-	
+  private Object myReceiver;
+  	
   private void loadPaths() {
     String userDir;
 		
@@ -67,9 +68,11 @@ public class ShellEndPoint extends HttpServlet {
   }
   
   private String commandResponse(String command) 
-    throws FileNotFoundException
+    throws FileNotFoundException, IOException
   {	
     String response;
+    Object ob;
+    Reader reader = null;
     final Log LOG = LogFactory.getLog(ShellEndPoint.class.getName());
     
     loadPaths();
@@ -77,19 +80,19 @@ public class ShellEndPoint extends HttpServlet {
     ScriptEngineManager manager = new ScriptEngineManager();
     ScriptEngine engine = manager.getEngineByName("jruby");
     ScriptingContainer container = new ScriptingContainer();
-
-    Reader reader = new FileReader(myEngine);
     
-    try {
-   //   engine.eval(new FileReader(hirbSource));
-      Object receiver = engine.eval(reader);
-      Object ob = container.callMethod(receiver,"run_code",command);
-      response = ob.toString();
-    } catch(ScriptException e) {
-      LOG.debug(e.getMessage());
-      response ="ERROR";
-	}
-	  
+    if(!loaded) {
+      try {
+	    reader = new FileReader(myEngine);
+	    myReceiver = engine.eval(reader);;
+      } catch (ScriptException e) {
+        LOG.debug(e.getMessage());
+	    response = e.toString();
+	  }
+	  loaded = true;
+    }
+    response = container.callMethod(myReceiver,"run_code",command).toString();
+    
     return response;
   }
 
@@ -99,6 +102,8 @@ public class ShellEndPoint extends HttpServlet {
     response.setContentType("text/plain");
     response.setHeader("Access-Control-Allow-Origin", "*");
 
+    request.getSession().setMaxInactiveInterval(30*60);
+    
     String commandEncoded = request.getQueryString();
     String commandDecoded = URLDecoder.decode(commandEncoded, "UTF-8");
     String command = "";
@@ -110,6 +115,7 @@ public class ShellEndPoint extends HttpServlet {
 						.compareTo("&_termlib_reqid") != 0) {
       command += commandDecoded.charAt(i++);
     }
+    
     output = commandResponse(command);	   
     PrintWriter out = response.getWriter();
     out.println(output);

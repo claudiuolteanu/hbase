@@ -56,8 +56,8 @@ TableResource tableR = new TableResource("tableResource");
   var conf= {
             x: 100,
             y: 100,
-            cols: 80,
-            rows: 24,
+            cols: 85,
+            rows: 50,
             greeting: helpPage,
             crsrBlinkMode: true,
             handler: termHandler,
@@ -99,7 +99,7 @@ TableResource tableR = new TableResource("tableResource");
     var response=this.socket;
     if (response.succes) {
       // status 200 OK
-      this.write("Server said:\n" + response.responseText);
+      this.write(response.responseText);
     }
     else if (response.errno) {
      // connection failed
@@ -107,17 +107,13 @@ TableResource tableR = new TableResource("tableResource");
     }
     else {
      // connection succeeded, but server returned other status than 2xx
-     this.write("Server returned: " +
-                response.status + " " + response.statusText);
+     this.write(response.responseText);
     }
-    
-    this.write("\n-----SOCKET DETAILS-----\n" + "status : " + response.status +
-    "\nCONTENT : " + response.responseText + "\nstatusText: " + response.statusText + 
-    "\n XML : " + response.responseXML + "\n succes : " + response.succes +
-    "\n headers length : " + response.headers.contentLength);
-    this.prompt()
+       
+    this.prompt();
 }
 
+  
 </script>
 
 <style type="text/css">
