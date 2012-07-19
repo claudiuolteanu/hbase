@@ -93,7 +93,7 @@ TableResource tableR = new TableResource("tableResource");
 	}
     else if (line != "") {
       var command = encodeURIComponent(line);
-      var myUrl = "http://localhost:60010/shell?" + command;
+      var myUrl = "http://localhost:60010/shellendpoint?" + command;
       this.send(
         {
           url: myUrl,
@@ -121,8 +121,10 @@ TableResource tableR = new TableResource("tableResource");
     }
     else {
      // connection succeeded, but server returned other status than 2xx
-     
-     this.write(response.responseText, true);
+      if(response.responseText.length > 1000)
+        this.write(response.responseText, true);
+      else
+        this.write(response.responseText);
     }
     this.prompt();
 }
