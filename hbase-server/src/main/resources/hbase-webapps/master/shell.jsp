@@ -51,7 +51,7 @@ TableResource tableR = new TableResource("tableResource");
 <script language="JavaScript" type="text/javascript" src="termlib.js"></script>
 
 <script language="JavaScript" type="text/javascript">
-  var helpPage="HBase Shell; type 'help<RETURN>' for list of supported commands.\nType 'exit<RETURN>' to leave the HBase Shell";
+  var helpPage="HBase Shell; type 'help<RETURN>' for list of supported commands.\nType 'resize x y' to resize the terminal (x - cols number; y - rows number).\nType 'exit<RETURN>' to leave the HBase Shell";
   var conf= {
             x: 100,
             y: 100,
@@ -76,6 +76,21 @@ TableResource tableR = new TableResource("tableResource");
       this.clear();
       this.write(helpPage);
     }
+    else if (line.substring(0,6) == 'resize') {
+	  if(line[6] != " ") {
+        this.write("You should type 'resize x y' if you want to resize the terminal.\n");
+	  } else {
+	    var linesplit = line.split(" ");
+	    if(linesplit.length != 3) {
+	      this.write("Wrong number of parameters! The correct format is 'resize x y'.\n");
+	    } else {
+		  var x = parseInt(linesplit[1], 10);
+	      var y = parseInt(linesplit[2], 10);
+	      this.resizeTo(x,y);
+	      this.write(helpPage);  
+	    }
+	  }	  
+	}
     else if (line != "") {
       var command = encodeURIComponent(line);
       var myUrl = "http://localhost:60010/shell?" + command;
@@ -109,7 +124,6 @@ TableResource tableR = new TableResource("tableResource");
      
      this.write(response.responseText, true);
     }
-       
     this.prompt();
 }
 
