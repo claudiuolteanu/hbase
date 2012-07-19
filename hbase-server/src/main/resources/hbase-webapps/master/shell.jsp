@@ -56,7 +56,7 @@ TableResource tableR = new TableResource("tableResource");
             x: 100,
             y: 100,
             cols: 85,
-            rows: 50,
+            rows: 24,
             greeting: helpPage,
             crsrBlinkMode: true,
             handler: termHandler,
@@ -106,7 +106,8 @@ TableResource tableR = new TableResource("tableResource");
     }
     else {
      // connection succeeded, but server returned other status than 2xx
-     this.write(response.responseText);
+     
+     this.write(response.responseText, true);
     }
        
     this.prompt();
