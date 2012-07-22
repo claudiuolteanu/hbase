@@ -23,12 +23,50 @@
   import="org.apache.hadoop.hbase.rest.VersionResource"
   import="org.apache.hadoop.hbase.client.HBaseAdmin"
   import="org.apache.hadoop.hbase.client.HConnectionManager"
-  import="org.apache.hadoop.conf.Configuration"%>
+  import="org.apache.hadoop.conf.Configuration"
+  import="org.w3c.dom.*"
+  import="java.io.File"
+  import="javax.xml.parsers.*"%>
 <%
 HMaster master = (HMaster)getServletContext().getAttribute(HMaster.MASTER);
 Configuration conf = master.getConfiguration();
 HBaseAdmin hbadmin = new HBaseAdmin(conf); 
-TableResource tableR = new TableResource("tableResource"); 
+TableResource tableR = new TableResource("tableResource");
+int enabled = 1;
+
+try {
+  String hbaseHome = System.getenv("HBASE_HOME");
+  String filename = hbaseHome + "/conf/hbase-site.xml";
+  File file = new File(filename);
+  DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+  DocumentBuilder builder = factory.newDocumentBuilder();
+  Document doc = builder.parse(file);
+  doc.getDocumentElement().normalize();
+  NodeList list = doc.getElementsByTagName("property");
+      
+  for(int i = 0; i < list.getLength(); i++) {
+    Node node1 = list.item(i);
+	if (node1.getNodeType() == Node.ELEMENT_NODE) {
+      Element element = (Element) node1;
+      NodeList firstNodeElementList = element.getElementsByTagName("name");
+      Element element1 = (Element) firstNodeElementList.item(0);
+      NodeList firstNodeList = element1.getChildNodes();
+      String xname = ((Node) firstNodeList.item(0)).getNodeValue();
+      if(xname.compareTo("hbase.webshell") == 0) {
+        NodeList lastNodeElementList = element.getElementsByTagName("value");
+        Element element2 = (Element) lastNodeElementList.item(0);
+        NodeList lastNodeList = element2.getChildNodes();
+        String xvalue = ((Node) lastNodeList.item(0)).getNodeValue();
+          if(xvalue.compareTo("true") == 0) {
+		    enabled = 0;
+		  }
+        }
+      }
+
+  }
+} catch(Exception e) { 
+  enabled = -1;  
+}
 %>  
 <?xml version="1.0" encoding="UTF-8" ?>
 
@@ -51,16 +89,20 @@ TableResource tableR = new TableResource("tableResource");
 <script language="JavaScript" type="text/javascript" src="termlib.js"></script>
 
 <script language="JavaScript" type="text/javascript">
-  var helpPage="HBase Shell; type 'help<RETURN>' for list of supported commands.\nType 'resize x y' to resize the terminal (x - cols number; y - rows number).\nType 'exit<RETURN>' to leave the HBase Shell";
+  var changed=false;
+  var access=true; 
+  var lines = 2;
+  var helpPage="HBase Shell; type 'help<RETURN>' for list of supported commands.\nType 'resize x y' to resize the terminal (x - cols number; y - rows number).\nType 'stop shell' to stop acces to shell.Type 'start shell' to start acces to shell\n\n";
+  var output=helpPage;
   var conf= {
             x: 100,
             y: 100,
-            cols: 85,
+            cols: 92,
             rows: 24,
             greeting: helpPage,
             crsrBlinkMode: true,
             handler: termHandler,
-            timeout: 50000,
+            timeout: 100000,
             frameWidth: 1
   }
   var term = new Terminal(conf);
@@ -72,11 +114,14 @@ TableResource tableR = new TableResource("tableResource");
   function termHandler() {
     this.newLine();
     var line = this.lineBuffer;
-    if (line == 'clear') {
+    if (line == 'clear' && access == true) {
       this.clear();
+      lines = 2;
+      this.resizeTo(92,24);
       this.write(helpPage);
+      output = helpPage;
     }
-    else if (line.substring(0,6) == 'resize') {
+    else if (line.substring(0,6) == 'resize' && access == true) {
 	  if(line[6] != " ") {
         this.write("You should type 'resize x y' if you want to resize the terminal.\n");
 	  } else {
@@ -87,13 +132,30 @@ TableResource tableR = new TableResource("tableResource");
 		  var x = parseInt(linesplit[1], 10);
 	      var y = parseInt(linesplit[2], 10);
 	      this.resizeTo(x,y);
-	      this.write(helpPage);  
+	      //this.write(helpPage);
+	      output += "\n> ";
+	      output += line;
+	      lines = output.split("\n").length;
+	      this.write(output);
 	    }
 	  }	  
 	}
-    else if (line != "") {
+	else if (line == 'stop shell') {
+	  access = false;
+	  output+="\n> stop shell\n";
+	  output+="Shell access stopped\n";
+	  printout(output);
+	}
+	else if (line == 'start shell') {
+	  access = true;
+	  output+="\n>start shell\n";
+	  output+="Shell access started\n";
+	  printout(output);
+	}
+    else if (line != "" && access == true) {
       var command = encodeURIComponent(line);
       var myUrl = "http://localhost:60010/shellendpoint?" + command;
+      output+="> "+line+"\n";
       this.send(
         {
           url: myUrl,
@@ -103,8 +165,15 @@ TableResource tableR = new TableResource("tableResource");
       );
      return;
     }
-    else 
-      this.write("Type 'help<RETURN>' for help");
+    else if(access == false) {
+	  output+="> "+line+"\n";
+	  output+="You don't have access!\n";
+	  printout(output);
+	}
+    else { 
+      output+="\nType 'help<RETURN>' for help\n";
+      printout(output);
+	}
 		
     this.prompt();
   }
@@ -121,15 +190,21 @@ TableResource tableR = new TableResource("tableResource");
     }
     else {
      // connection succeeded, but server returned other status than 2xx
-      if(response.responseText.length > 1000)
-        this.write(response.responseText, true);
-      else
-        this.write(response.responseText);
+      output += response.responseText;
+      printout(output);
     }
     this.prompt();
-}
-
-  
+  }
+ 
+function printout(result) {
+  lines = result.split("\n").length;
+  if (term.maxLines < (lines + 10))
+    term.maxLines = lines + 10;
+  term.resizeTo(92, term.maxLines); 
+  term.write(result);
+  var elem = document.getElementById('termDiv');
+  elem.scrollTop = elem.scrollHeight;
+} 
 </script>
 
 <style type="text/css">
@@ -143,6 +218,13 @@ TableResource tableR = new TableResource("tableResource");
 .termReverse {
   color: #FFFFFF;
   background: #000000;
+}
+
+div.scroll {
+  width:750px;
+  height:390px;
+  overflow-x:hidden;
+  overflow-y:auto;
 }
 </style>
 
@@ -183,11 +265,50 @@ TableResource tableR = new TableResource("tableResource");
     </div>
     </div>
 
-  <div id="termDiv" style="position: absolute; visibility: hidden; z-index: 1;"></div>
+  <div class="scroll" id="termDiv" style="position: absolute; visibility: hidden; z-index: 1;"></div>
+  <% if(enabled == 0) {
+    %>
   <script language="JavaScript" type="text/javascript">
-	termOpen();
+	  termOpen();
   </script>
-
+  <% } else if(enabled == -1) {
+    %>
+    <div class="container">
+    <div class="row inner_header">
+      <div class="span8">
+        <h3>
+           ERROR! Couldn't open file <code>$HBASE_HOME/conf/hbase-site.xml</code>.
+         </h3>
+      </div>
+    </div>
+    </div>
+  <% } else {
+	%>
+	<div class="container">
+	<div class="row inner_header">
+	<div class="span8">
+       <h4>
+         Sorry! The shell has been disabled!<br/> 
+         If you want to enable it edit <code class="filename">$HBASE_HOME/conf/hbase-site.xml</code> 
+         and set <code>hbase.webshell</code> to <code>true</code>.<br/><br/>
+         Example : 
+		<pre class="programlisting">
+  &lt;?xml version="1.0"?&gt;
+  &lt;?xml-stylesheet type="text/xsl" href="configuration.xsl"?&gt;
+  &lt;configuration&gt;
+    &lt;property&gt;
+      &lt;name&gt;hbase.webshell&lt;/name&gt;
+      &lt;value&gt;true
+    &lt;/property&gt;
+  &lt;/configuration&gt;
+      </pre>
+       </h4>
+    </div>
+    </div>
+    </div>
+  <%
+    }
+    %>	  
 </body>
 </html>
 
