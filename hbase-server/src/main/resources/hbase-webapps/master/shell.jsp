@@ -92,7 +92,7 @@ try {
   var changed=false;
   var access=true; 
   var lines = 2;
-  var helpPage="HBase Shell; type 'help<RETURN>' for list of supported commands.\nType 'resize x y' to resize the terminal (x - cols number; y - rows number).\nType 'stop shell' to stop acces to shell.Type 'start shell' to start acces to shell\n\n";
+  var helpPage="HBase Shell; type 'help<RETURN>' for list of supported commands.\nType 'resize x y' to resize the terminal (x - cols number; y - rows number).\nType 'stop shell' to stop acces to shell. Type 'start shell' to start acces to shell.\n";
   var output=helpPage;
   var conf= {
             x: 100,
@@ -102,7 +102,7 @@ try {
             greeting: helpPage,
             crsrBlinkMode: true,
             handler: termHandler,
-            timeout: 100000,
+            timeout: 11000,
             frameWidth: 1
   }
   var term = new Terminal(conf);
@@ -120,8 +120,7 @@ try {
       this.resizeTo(92,24);
       this.write(helpPage);
       output = helpPage;
-    }
-    else if (line.substring(0,6) == 'resize' && access == true) {
+    } else if (line.substring(0,6) == 'resize' && access == true) {
 	  if(line[6] != " ") {
         this.write("You should type 'resize x y' if you want to resize the terminal.\n");
 	  } else {
@@ -139,20 +138,17 @@ try {
 	      this.write(output);
 	    }
 	  }	  
-	}
-	else if (line == 'stop shell') {
+    } else if (line == 'stop shell') {
 	  access = false;
 	  output+="\n> stop shell\n";
-	  output+="Shell access stopped\n";
+	  output+="Shell access stopped\n\n";
 	  printout(output);
-	}
-	else if (line == 'start shell') {
+	} else if (line == 'start shell') {
 	  access = true;
 	  output+="\n>start shell\n";
-	  output+="Shell access started\n";
+	  output+="Shell access started\n\n";
 	  printout(output);
-	}
-    else if (line != "" && access == true) {
+	} else if (line != "" && access == true) {
       var command = encodeURIComponent(line);
       var myUrl = "http://localhost:60010/shellendpoint?" + command;
       output+="> "+line+"\n";
@@ -164,14 +160,12 @@ try {
         }
       );
      return;
-    }
-    else if(access == false) {
+    } else if(access == false) {
 	  output+="> "+line+"\n";
-	  output+="You don't have access!\n";
+	  output+="You don't have access!\n\n\n";
 	  printout(output);
-	}
-    else { 
-      output+="\nType 'help<RETURN>' for help\n";
+	} else { 
+      output+="\n>\nType 'help<RETURN>' for help\n\n";
       printout(output);
 	}
 		
@@ -196,14 +190,16 @@ try {
     this.prompt();
   }
  
-function printout(result) {
-  lines = result.split("\n").length;
-  if (term.maxLines < (lines + 10))
-    term.maxLines = lines + 10;
-  term.resizeTo(92, term.maxLines); 
-  term.write(result);
-  var elem = document.getElementById('termDiv');
-  elem.scrollTop = elem.scrollHeight;
+  function printout(result) {
+    lines = result.split("\n").length;
+    
+    if (term.maxLines < (lines + 10))
+      term.maxLines = lines + 10;
+    
+    term.resizeTo(92, term.maxLines); 
+    term.write(result);
+    var elem = document.getElementById('termDiv');
+    elem.scrollTop = elem.scrollHeight;
 } 
 </script>
 
@@ -277,7 +273,7 @@ div.scroll {
     <div class="row inner_header">
       <div class="span8">
         <h3>
-           ERROR! Couldn't open file <code>$HBASE_HOME/conf/hbase-site.xml</code>.
+           ERROR! Couldn't open file <code class="filename">$HBASE_HOME/conf/hbase-site.xml</code>.
          </h3>
       </div>
     </div>
