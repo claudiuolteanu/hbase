@@ -58,6 +58,7 @@ org.apache.hadoop.hbase.HBaseConfiguration;
     <link href="/static/css/bootstrap.css" rel="stylesheet">
     <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
     <link href="/static/css/hbase.css" rel="stylesheet">
+    <script src="/static/js/runhbck.js"></script>
     <!--[if lt IE 9]>
       <script src="/static/js/html5shiv.js"></script>
     <![endif]-->
@@ -153,7 +154,30 @@ org.apache.hadoop.hbase.HBaseConfiguration;
                 </div>
             </div>
         </div>
-
+  
+        <h2>Cluster Informations</h2>
+        <div class="tabbable">
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a href="#clusterDisabled" data-toggle="tab">Disabled</a>
+                </li>
+                <li class="">
+                    <a href="#clusterEnabled" data-toggle="tab" onclick='runHbckFunction()' >Enabled</a>
+                </li>
+            </ul>
+            <div class="tab-content" style="padding-bottom: 9px; border-bottom: 1px solid #ddd;">
+                <div class="tab-pane active" id="clusterDisabled">
+                    <%if (metaLocation != null) %>
+                        <pre> Cluster informations disabled </pre>
+                    </%if>
+                </div>
+                <div class="tab-pane" id="clusterEnabled">
+                    <%if (rootLocation != null) %>
+                        <pre class="runHbck" id="runHbckId"> Loading...</pre>
+                    </%if>
+                </div>
+            </div>
+        </div>  
 
         <& AssignmentManagerStatusTmpl; assignmentManager=master.getAssignmentManager()&>
 
@@ -325,3 +349,4 @@ org.apache.hadoop.hbase.HBaseConfiguration;
 </table>
 </%if>
 </%def>
+

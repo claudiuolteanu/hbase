@@ -44,7 +44,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jruby.embed.PathType;
 import org.jruby.embed.ScriptingContainer;
 
-public class ShellEndPoint extends HttpServlet {
+public class ShellServlet extends HttpServlet {
   private static String jrubyHome;
   private String rubySources;
   private String hirbSource;

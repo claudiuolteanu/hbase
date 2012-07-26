@@ -996,7 +996,8 @@ Server {
      this.infoServer = new InfoServer(MASTER, a, port, false, this.conf);
      this.infoServer.addServlet("status", "/master-status", MasterStatusServlet.class);
      this.infoServer.addServlet("dump", "/dump", MasterDumpServlet.class);
-     this.infoServer.addServlet("shell", "/shellendpoint", ShellEndPoint.class);
+     this.infoServer.addServlet("shell", "/shellendpoint", ShellServlet.class);
+     this.infoServer.addServlet("runhbck", "/run-hbck", RunHbckServlet.class);
      this.infoServer.setAttribute(MASTER, this);
      this.infoServer.start();
     }
