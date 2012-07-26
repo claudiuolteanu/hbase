@@ -97,7 +97,7 @@ public class ShellServlet extends HttpServlet {
     Object ob;
     Reader reader = null;
     int checked;
-    final Log LOG = LogFactory.getLog(ShellEndPoint.class.getName());
+    final Log LOG = LogFactory.getLog(ShellServlet.class.getName());
     final String commandFinal = command;
     
     checked = loadPaths();
